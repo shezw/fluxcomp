@@ -147,6 +147,7 @@ public:
      bool           c_mode;
      bool           identity;
      std::string    include_prefix;
+     std::string    output_dir;
      bool           no_direct;
      bool           call_mode;
      bool           object_ptrs;
@@ -216,10 +217,18 @@ public:
                     include_prefix = std::string(&arg[3]);
                     continue;
                }
-               if (strncmp (arg, "--include-prefix=", 17) == 0) {
-                    include_prefix = std::string(&arg[17]);
-                    continue;
-               }
+              if (strncmp (arg, "--include-prefix=", 17) == 0) {
+                  include_prefix = std::string(&arg[17]);
+                  continue;
+              }
+              if (strncmp (arg, "-o=", 3) == 0) {
+                  output_dir = std::string(&arg[3]);
+                  continue;
+              }
+              if (strncmp (arg, "--output-dir=", 13) == 0) {
+                  output_dir = std::string(&arg[13]);
+                  continue;
+              }
                if (strncmp (arg, "--static-args-bytes=", 20) == 0) {
                     static_args_bytes = &arg[20];
                     continue;
@@ -259,7 +268,8 @@ public:
           fprintf( stderr, "   -i, --identity                 Generate caller identity tracking code\n" );
           fprintf( stderr, "   --object-ptrs                  Return object pointers rather than IDs\n" );
           fprintf( stderr, "   --call-mode                    Use call mode function to determine call mode\n" );
-          fprintf( stderr, "   -p=, --include-prefix=         Override standard include prefix for includes\n" );
+         fprintf( stderr, "   -p=, --include-prefix=         Override standard include prefix for includes\n" );
+         fprintf( stderr, "   -o=, --output-dir=         Override output dir\n" );
           fprintf( stderr, "   --static-args-bytes=           Override standard limit (1000) for stack based arguments\n" );
           fprintf( stderr, "   --dispatch-error-abort         Abort execution when object lookups etc fail\n" );
           fprintf( stderr, "\n" );
@@ -596,9 +606,9 @@ public:
 void
 Entity::Dump() const
 {
-     direct_log_printf( NULL, "\n" );
-     direct_log_printf( NULL, "Entity (TYPE %d)\n", GetType() );
-     direct_log_printf( NULL, "  Buffer at        %p [%zu]\n", buf, length );
+//direct_log_printf( NULL, "\n" );
+//direct_log_printf( NULL, "Entity (TYPE %d)\n", GetType() );
+//direct_log_printf( NULL, "  Buffer at        %p [%zu]\n", buf, length );
 }
 
 void
@@ -606,10 +616,10 @@ Interface::Dump() const
 {
      Entity::Dump();
 
-     direct_log_printf( NULL, "  Name             %s\n", name.c_str() );
-     direct_log_printf( NULL, "  Version          %s\n", version.c_str() );
-     direct_log_printf( NULL, "  Object           %s\n", object.c_str() );
-     direct_log_printf( NULL, "  Dispatch         %s\n", dispatch.c_str() );
+//direct_log_printf( NULL, "  Name             %s\n", name.c_str() );
+//direct_log_printf( NULL, "  Version          %s\n", version.c_str() );
+//direct_log_printf( NULL, "  Object           %s\n", object.c_str() );
+//direct_log_printf( NULL, "  Dispatch         %s\n", dispatch.c_str() );
 }
 
 void
@@ -617,7 +627,7 @@ Method::Dump() const
 {
      Entity::Dump();
 
-     direct_log_printf( NULL, "  Name             %s\n", name.c_str() );
+//direct_log_printf( NULL, "  Name             %s\n", name.c_str() );
 }
 
 void
@@ -625,10 +635,10 @@ Arg::Dump() const
 {
      Entity::Dump();
 
-     direct_log_printf( NULL, "  Name             %s\n", name.c_str() );
-     direct_log_printf( NULL, "  Direction        %s\n", direction.c_str() );
-     direct_log_printf( NULL, "  Type             %s\n", type.c_str() );
-     direct_log_printf( NULL, "  Typename         %s\n", type_name.c_str() );
+//direct_log_printf( NULL, "  Name             %s\n", name.c_str() );
+//direct_log_printf( NULL, "  Direction        %s\n", direction.c_str() );
+//direct_log_printf( NULL, "  Type             %s\n", type.c_str() );
+//direct_log_printf( NULL, "  Typename         %s\n", type_name.c_str() );
 }
 
 /**********************************************************************************************************************/
@@ -1787,7 +1797,7 @@ void
 FluxComp::GenerateHeader( const Interface *face, const FluxConfig &config )
 {
      FILE        *file;
-     std::string  filename = face->object + ".h";
+     std::string  filename = config.output_dir + '/' + face->object + ".h";
 
      file = fopen( filename.c_str(), "w" );
      if (!file) {
@@ -2053,7 +2063,7 @@ void
 FluxComp::GenerateSource( const Interface *face, const FluxConfig &config )
 {
      FILE        *file;
-     std::string  filename = face->object;
+     std::string  filename = config.output_dir + "/" + face->object;
      bool         direct   = true;
 
      if (!config.c_mode)
